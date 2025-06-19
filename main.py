@@ -5,12 +5,14 @@ from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import os
 
-# DATABASE_URL = "pg-35d29e5e-jadhaopratik999-f1e9.b.aivencloud.com"
-DATABASE_URL = "postgresql://avnadmin:AVNS_42f-Sqxj1I4qs6ddG4N@pg-35d29e5e-jadhaopratik999-f1e9.b.aivencloud.com:13093/defaultdb?sslmode=require"
+load_dotenv()  # Load values from .env
 
-SECRET_KEY = "AVNS_42f-Sqxj1I4qs6ddG4N"
-ALGORITHM = "HS256"
+DATABASE_URL = os.getenv("DATABASE_URL")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
