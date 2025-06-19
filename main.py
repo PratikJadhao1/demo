@@ -6,6 +6,8 @@ from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from fastapi import Path
+
 import os
 
 load_dotenv()  # Load values from .env
@@ -63,3 +65,50 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token({"sub": user.email})
     return {"token": token, "user": {"id": user.id, "email": user.email, "name": user.name}}
+
+
+
+# Update user
+@app.put("/user/{user_id}")
+def update_user(
+    user_id: int = Path(..., description="The ID of the user to update"),
+    name: str = None,
+    password: str = None,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if name:
+        user.name = name
+    if password:
+        user.password_hash = pwd_context.hash(password)
+    db.commit()
+    db.refresh(user)
+    return {"id": user.id, "email": user.email, "name": user.name}
+
+# Delete user
+@app.delete("/user/{user_id}")
+def delete_user(
+    user_id: int = Path(..., description="The ID of the user to delete"),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"detail": "User deleted successfully"}
+
+
+@app.post("/signup")
+def signup(email: str, password: str, name: str = "", db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    hashed_password = pwd_context.hash(password)
+    new_user = User(email=email, password_hash=hashed_password, name=name)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"id": new_user.id, "email": new_user.email, "name": new_user.name}
