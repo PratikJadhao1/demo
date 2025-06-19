@@ -1,16 +1,15 @@
 from fastapi import FastAPI, HTTPException, Depends
+import jwt
 from sqlalchemy import create_engine, Column, Integer, String, TIMESTAMP
+from sqlalchemy.orm import sessionmaker,Session
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
-from jose import jwt
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
 from fastapi import Path
+from dotenv import load_dotenv
 
 import os
-
-load_dotenv()  # Load values from .env
+load_dotenv() 
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY")
